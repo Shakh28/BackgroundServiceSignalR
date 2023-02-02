@@ -1,0 +1,28 @@
+﻿@page "/contracts/{UserId}"
+@inject HttpClient http
+@using ShopBlazor.Pages.Dtos
+
+<h3>Contracts</h3>
+
+@if (contracts is not null)
+{
+@foreach (var contract in contracts)
+{
+    <p>@contract.Id, @contract.Name, @contract.Status.ToString()</p>
+    <br>
+}
+}
+
+@code {
+    [Parameter]
+    public string? UserId { get; set; }
+
+    private List<Contract>? contracts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        contracts = await http.GetFromJsonAsync<List<Contract>>($"https://localhost:7237/api/users/{UserId}/contracts");
+    }
+
+}
+

@@ -1,0 +1,45 @@
+﻿@page "/contracts"
+@inject HttpClient http
+@using ShopBlazor.Pages.Dtos
+@using Microsoft.AspNetCore.SignalR.Client
+
+<h3>Contracts</h3>
+
+@if (contracts is not null)
+{
+@foreach (var contract in contracts)
+{
+    <p>@contract.Id, @contract.Name, @contract.Status.ToString(), @contract.Amount</p>
+    <br>
+}
+}
+
+@code {
+    private List<Contract>? contracts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        contracts = await http.GetFromJsonAsync<List<Contract>>($"https://localhost:7237/api/contracts");
+
+        await Connect();
+    }
+
+    private async Task Connect()
+    {
+        var hubconnection = new HubConnectionBuilder()
+            .WithUrl("https://localhost:7237/contracts-hub")
+            .Build();
+
+        hubconnection.On<Contract>("ContractPaid", contract =>
+        {
+            if (contracts.Any(c => c.Id == contract.Id))
+            {
+                contracts[contract.Id].Status = contract.Status;
+                contracts[contract.Id].Amount = contract.Amount;
+                StateHasChanged();
+            }
+        });
+
+        await hubconnection.StartAsync();
+    }
+}

@@ -1,0 +1,34 @@
+﻿@page "/"
+@inject HttpClient Http
+@using ShopBlazor.Shared
+@using ShopBlazor.Pages.Dtos
+
+<PageTitle>Weather forecast</PageTitle>
+
+@if (users == null)
+{
+    <MudProgressCircular Color="Color.Default" Indeterminate="true" />
+}
+else
+{
+    @if (users is not null)
+    {
+        @foreach (var user in users)
+        {
+            var link = $"/contracts/{user.Id}";
+            <p>@user.Id, @user.Name</p>
+            <MudLink Href="@link">Contracts</MudLink>
+            <br>
+        }
+    }
+
+}
+
+@code {
+    private List<User>? users;
+
+    protected override async Task OnInitializedAsync()
+    {
+        users = await Http.GetFromJsonAsync<List<User>>("https://localhost:7237/api/Users");
+    }
+}
